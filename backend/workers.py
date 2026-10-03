@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 from database import engine
 from models import TranscriptRecord
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(ENV_PATH, override=True)
+load_dotenv(override=True)
 
 API_KEY = os.getenv("GNANI_API_KEY")
 BASE_URL = "https://api.vachana.ai"
@@ -19,6 +22,11 @@ async def summarize_transcript_with_llm(client: httpx.AsyncClient, text: str) ->
         return "No speech content detected in the recording to summarize."
 
     groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        load_dotenv(ENV_PATH, override=True)
+        load_dotenv(override=True)
+        groq_api_key = os.getenv("GROQ_API_KEY")
+
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY is not configured in environment variables.")
 

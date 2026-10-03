@@ -1,16 +1,20 @@
 import os
 import shutil
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, select
 from fastapi.responses import FileResponse
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
+load_dotenv(override=True)
+
 from database import engine
 from models import TranscriptRecord
 from workers import process_audio_task
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 

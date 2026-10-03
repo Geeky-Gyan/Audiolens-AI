@@ -1,8 +1,10 @@
-from sqlmodel import create_engine, Session
 import os
 from dotenv import load_dotenv
+from sqlmodel import create_engine, Session
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
+load_dotenv(override=True)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)

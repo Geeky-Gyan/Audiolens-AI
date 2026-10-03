@@ -179,8 +179,20 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errText = await response.text().catch(() => "");
-        throw new Error(errText || `Server responded with HTTP ${response.status}`);
+        let msg = `Server responded with HTTP ${response.status}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.detail) msg = errJson.detail;
+          else if (errJson?.message) msg = errJson.message;
+        } catch {
+          const errText = await response.text().catch(() => "");
+          if (errText && !errText.includes("<!DOCTYPE") && errText.length < 200) {
+            msg = errText;
+          } else if (response.status === 500 || response.status === 502) {
+            msg = "Backend server is not responding on port 8000. Please ensure FastAPI is running.";
+          }
+        }
+        throw new Error(msg);
       }
 
       const data = await response.json();
