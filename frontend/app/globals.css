@@ -25,20 +25,33 @@
 
 html {
   color-scheme: dark;
-  font-size: 14.5px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 12px;
+  }
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.925rem;
-  line-height: 1.55;
+  font-size: 0.9rem;
+  line-height: 1.5;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   min-height: 100vh;
+}
+
+@media (max-width: 767px) {
+  .sidebar-responsive {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
 }
 
 ::-webkit-scrollbar {

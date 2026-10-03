@@ -37,7 +37,7 @@ export default function Home() {
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
   const [historySearch, setHistorySearch] = useState<string>("");
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
-  const [sidebarWidth, setSidebarWidth] = useState<number>(470);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(380);
   const [isResizing, setIsResizing] = useState<boolean>(false);
 
   const [viewTab, setViewTab] = useState<ViewTab>("split");
@@ -384,8 +384,8 @@ export default function Home() {
           formatDate={formatDate}
         />
 
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10 flex flex-col items-center">
-          <div className="w-full max-w-[1520px] flex flex-col gap-8">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 flex flex-col items-center">
+          <div className="w-full max-w-[1400px] flex flex-col gap-6">
             {!activeRecord && (
               <UploadZone
                 file={file}
