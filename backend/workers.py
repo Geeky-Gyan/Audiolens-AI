@@ -1,5 +1,7 @@
 import os
+import re
 import asyncio
+from collections import Counter
 import httpx
 from sqlmodel import Session
 from dotenv import load_dotenv
@@ -13,22 +15,135 @@ API_KEY = os.getenv("GNANI_API_KEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS = {"X-API-Key-ID": API_KEY}
 
+STOPWORDS = {
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", 
+    "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", 
+    "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", 
+    "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", 
+    "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", 
+    "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", 
+    "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", 
+    "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", 
+    "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", 
+    "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", 
+    "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", 
+    "now", "uh", "um", "ah", "like", "yeah", "okay", "alright", "right", "well", "know", "mean"
+}
+
+
+def _clean_sentence(s: str) -> str:
+    s = s.strip(" \t\n\r-\"'`*•")
+    if not s:
+        return ""
+    s = s[0].upper() + s[1:]
+    if s[-1] not in ".!?":
+        s += "."
+    return s
+
+
+def _split_into_sentences(text: str) -> list[str]:
+    cleaned_text = re.sub(r"\s+", " ", text).strip()
+    raw_sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned_text) if s.strip()]
+
+    if len(raw_sentences) <= 1 and len(cleaned_text.split()) > 25:
+        words = cleaned_text.split()
+        chunk_size = 15
+        raw_sentences = [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+
+    processed = []
+    for s in raw_sentences:
+        formatted = _clean_sentence(s)
+        if len(formatted.split()) >= 3:
+            processed.append(formatted)
+    return processed
+
+
+def generate_algorithmic_summary(text: str) -> str:
+    if not text or not text.strip():
+        return "No speech content detected in the recording to summarize."
+
+    sentences = _split_into_sentences(text)
+    if not sentences:
+        fallback = _clean_sentence(text[:300])
+        return f"### Key Highlights\n- {fallback}\n\n### Executive Summary\n{fallback}"
+
+    if len(sentences) <= 2:
+        bullets = "\n".join([f"- {s}" for s in sentences])
+        body = " ".join(sentences)
+        return f"### Key Highlights\n{bullets}\n\n### Executive Summary\n{body}"
+
+    meaningful_words = [
+        w.lower() for w in re.findall(r"\b[a-zA-Z]{3,}\b", text) 
+        if w.lower() not in STOPWORDS
+    ]
+
+    if not meaningful_words:
+        highlights = sentences[:min(3, len(sentences))]
+        bullets = "\n".join([f"- {h}" for h in highlights])
+        return f"### Key Highlights\n{bullets}\n\n### Executive Summary\n{' '.join(sentences)}"
+
+    freq = Counter(meaningful_words)
+    max_freq = max(freq.values(), default=1)
+    word_weights = {w: count / max_freq for w, count in freq.items()}
+
+    scored_sentences = []
+    for i, sent in enumerate(sentences):
+        sent_words = [
+            w.lower() for w in re.findall(r"\b[a-zA-Z]{3,}\b", sent) 
+            if w.lower() not in STOPWORDS
+        ]
+        if not sent_words:
+            scored_sentences.append((0.0, i, sent))
+            continue
+
+        raw_score = sum(word_weights.get(w, 0.0) for w in sent_words)
+        score = raw_score / (len(sent_words) ** 0.55)
+
+        if i == 0:
+            score *= 1.25
+        elif i == len(sentences) - 1:
+            score *= 1.10
+
+        scored_sentences.append((score, i, sent))
+
+    ranked = sorted(scored_sentences, key=lambda x: x[0], reverse=True)
+
+    num_highlights = min(4, max(2, len(sentences) // 3))
+    highlight_indices = {item[1] for item in ranked[:num_highlights]}
+    highlights = [sent for i, sent in enumerate(sentences) if i in highlight_indices]
+
+    num_summary = min(6, max(3, len(sentences) // 2))
+    summary_indices = {item[1] for item in ranked[:num_summary]}
+    summary_sentences = [sent for i, sent in enumerate(sentences) if i in summary_indices]
+
+    bullets = "\n".join([f"- {h}" for h in highlights])
+
+    if len(summary_sentences) > 4:
+        half = len(summary_sentences) // 2
+        p1 = " ".join(summary_sentences[:half])
+        p2 = " ".join(summary_sentences[half:])
+        overview = f"{p1}\n\n{p2}"
+    else:
+        overview = " ".join(summary_sentences)
+
+    return f"### Key Highlights\n{bullets}\n\n### Executive Summary\n{overview}"
+
+
 async def summarize_transcript_with_llm(client: httpx.AsyncClient, text: str) -> str:
     if not text or not text.strip():
         return "No speech content detected in the recording to summarize."
 
-    prompt = (
-        "You are an expert audio transcription analyst. Provide a well-structured summary of the following audio transcript.\n"
-        "Format your response in Markdown with two clear sections:\n"
-        "### Key Highlights\n"
-        "- Bullet points of the most important takeaways\n\n"
-        "### Executive Summary\n"
-        "A concise 2-3 paragraph explanation of the main discussion.\n\n"
-        f"Transcript:\n\"\"\"\n{text}\n\"\"\""
-    )
-
     groq_api_key = os.getenv("GROQ_API_KEY")
     if groq_api_key:
+        prompt = (
+            "You are an expert audio transcription analyst. Provide a well-structured summary of the following audio transcript.\n"
+            "Format your response in Markdown with two clear sections:\n"
+            "### Key Highlights\n"
+            "- Bullet points of the most important takeaways\n\n"
+            "### Executive Summary\n"
+            "A concise 2-3 paragraph explanation of the main discussion.\n\n"
+            f"Transcript:\n\"\"\"\n{text}\n\"\"\""
+        )
         try:
             res = await client.post(
                 "https://api.groq.com/openai/v1/chat/completions",
@@ -43,27 +158,11 @@ async def summarize_transcript_with_llm(client: httpx.AsyncClient, text: str) ->
             if res.status_code == 200:
                 return res.json()["choices"][0]["message"]["content"]
             else:
-                print(f"Groq API error ({res.status_code}): {res.text}")
+                print(f"Groq API returned HTTP {res.status_code}: {res.text}. Falling back to algorithmic summarizer.")
         except Exception as e:
-            print(f"Groq summarization failed, falling back: {e}")
+            print(f"Groq summarization request failed ({e}). Falling back to algorithmic summarizer.")
 
-    clean_text = text.replace("\n", " ").strip()
-    raw_sentences = [s.strip() for s in clean_text.split(".") if len(s.strip()) > 15]
-    if not raw_sentences:
-        return clean_text[:400]
-
-    highlights = raw_sentences[:min(4, len(raw_sentences))]
-    overview = " ".join(raw_sentences[min(4, len(raw_sentences)):min(8, len(raw_sentences))])
-    if not overview:
-        overview = " ".join(raw_sentences[:min(3, len(raw_sentences))])
-
-    bullets = "\n".join([f"- {h}." for h in highlights])
-    return (
-        f"### Key Highlights\n"
-        f"{bullets}\n\n"
-        f"### Executive Summary\n"
-        f"{overview}."
-    )
+    return generate_algorithmic_summary(text)
 
 
 async def process_audio_task(record_id: int, file_path: str):
