@@ -1,0 +1,31 @@
+# Environment & secrets
+.env
+*.env
+.env*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+backend/uploads/
+uploads/
+*.db
+*.ogg
+*.mp3
+*.wav
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+.DS_Store
+*.pem
+.vscode/
