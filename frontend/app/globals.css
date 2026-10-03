@@ -25,15 +25,15 @@
 
 html {
   color-scheme: dark;
-  font-size: 16px;
+  font-size: 14.5px;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.925rem;
+  line-height: 1.55;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

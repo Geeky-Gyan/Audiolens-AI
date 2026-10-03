@@ -22,11 +22,11 @@ export const renderFormattedSummary = (rawText?: string | null): React.ReactNode
 
   const lines = rawText.split("\n");
   return (
-    <div className="space-y-4 font-sans">
+    <div className="space-y-3.5 font-sans">
       {lines.map((line, idx) => {
         const trimmed = line.trim();
         if (!trimmed) {
-          return <div key={idx} className="h-2" />;
+          return <div key={idx} className="h-1.5" />;
         }
 
         if (trimmed.startsWith("###") || trimmed.startsWith("##") || trimmed.startsWith("#")) {
@@ -34,9 +34,9 @@ export const renderFormattedSummary = (rawText?: string | null): React.ReactNode
           return (
             <h4
               key={idx}
-              className="text-lg md:text-2xl font-bold text-white pt-3 flex items-center gap-3 border-b border-indigo-500/25 pb-2"
+              className="text-base md:text-lg font-bold text-white pt-2 flex items-center gap-2.5 border-b border-indigo-500/25 pb-1.5"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+              <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
               {cleanHeader}
             </h4>
           );
@@ -45,8 +45,8 @@ export const renderFormattedSummary = (rawText?: string | null): React.ReactNode
         if (trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
           const content = trimmed.substring(2);
           return (
-            <div key={idx} className="flex items-start gap-3.5 pl-1 text-slate-100 text-base md:text-lg leading-relaxed">
-              <span className="w-2 h-2 rounded-full bg-violet-400 mt-2.5 shrink-0 shadow-sm shadow-violet-400/50" />
+            <div key={idx} className="flex items-start gap-2.5 pl-1 text-slate-100 text-sm md:text-[15px] leading-relaxed">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-2 shrink-0 shadow-sm shadow-violet-400/50" />
               <span>{content}</span>
             </div>
           );
@@ -56,8 +56,8 @@ export const renderFormattedSummary = (rawText?: string | null): React.ReactNode
           const numberMatch = trimmed.match(/^(\d+)\.\s*(.*)$/);
           if (numberMatch) {
             return (
-              <div key={idx} className="flex items-start gap-3.5 pl-1 text-slate-100 text-base md:text-lg leading-relaxed">
-                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 shrink-0 mt-0.5">
+              <div key={idx} className="flex items-start gap-2.5 pl-1 text-slate-100 text-sm md:text-[15px] leading-relaxed">
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 shrink-0 mt-0.5">
                   {numberMatch[1]}
                 </span>
                 <span>{numberMatch[2]}</span>
@@ -67,7 +67,7 @@ export const renderFormattedSummary = (rawText?: string | null): React.ReactNode
         }
 
         return (
-          <p key={idx} className="text-slate-200 text-base md:text-lg leading-relaxed">
+          <p key={idx} className="text-slate-200 text-sm md:text-[15px] leading-relaxed">
             {trimmed}
           </p>
         );
@@ -179,8 +179,8 @@ export default function ResultsView({
           <div className="glass-panel border border-violet-500/30 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col gap-5 bg-gradient-to-b from-[#10142b]/80 to-[#0a0e1c]/80 min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
               <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                <div className="w-3 h-3 rounded-full bg-violet-400 shadow-lg shadow-violet-400/50 shrink-0" />
-                <h3 className="text-lg md:text-2xl font-black text-white whitespace-nowrap">
+                <div className="w-2.5 h-2.5 rounded-full bg-violet-400 shadow-md shadow-violet-400/50 shrink-0" />
+                <h3 className="text-base md:text-xl font-bold text-white whitespace-nowrap">
                   Executive Summary
                 </h3>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/30 font-bold shrink-0">
@@ -216,7 +216,7 @@ export default function ResultsView({
               {activeRecord.summary_text ? (
                 renderFormattedSummary(activeRecord.summary_text)
               ) : (
-                <div className="text-slate-400 italic py-12 text-center text-base">
+                <div className="text-slate-400 italic py-12 text-center text-sm">
                   Generating executive summary with LLaMA 3.3...
                 </div>
               )}
@@ -236,8 +236,8 @@ export default function ResultsView({
             <div className="flex flex-col gap-3.5 border-b border-white/[0.08] pb-4">
               <div className="flex flex-wrap items-center justify-between gap-2.5 min-w-0">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50 shrink-0" />
-                  <h3 className="text-lg md:text-2xl font-black text-white whitespace-nowrap">Full Transcript</h3>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50 shrink-0" />
+                  <h3 className="text-base md:text-xl font-bold text-white whitespace-nowrap">Full Transcript</h3>
                   {activeRecord.transcript_text && (
                     <span className="text-xs md:text-sm px-3 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 font-mono font-bold shrink-0">
                       {transcriptWordCount} words
@@ -298,7 +298,7 @@ export default function ResultsView({
               </div>
             </div>
 
-            <div className="bg-[#06080f]/80 border border-white/[0.08] rounded-2xl p-6 min-h-[22rem] max-h-[42rem] overflow-y-auto font-sans leading-relaxed text-slate-100 text-base md:text-lg">
+            <div className="bg-[#06080f]/80 border border-white/[0.08] rounded-2xl p-6 min-h-[22rem] max-h-[42rem] overflow-y-auto font-sans leading-relaxed text-slate-100 text-sm md:text-[15px]">
               {activeRecord.transcript_text ? (
                 transcriptSearch.trim() ? (
                   activeRecord.transcript_text

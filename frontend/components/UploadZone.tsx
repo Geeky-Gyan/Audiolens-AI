@@ -43,14 +43,14 @@ export default function UploadZone({
           Gnani Prisma ASR • Meta LLaMA 3.3 via Groq
         </div>
 
-        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
           Turn Spoken Audio into{" "}
           <span className="bg-gradient-to-r from-indigo-400 via-violet-300 to-cyan-300 bg-clip-text text-transparent">
             Precision Intelligence
           </span>
         </h2>
 
-        <p className="text-slate-300 text-base md:text-xl max-w-3xl mx-auto leading-relaxed">
+        <p className="text-slate-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
           Upload voice recordings, team discussions, lectures, or interviews of{" "}
           <span className="text-white font-semibold">any duration</span>. Our asynchronous background
           pipeline guarantees zero HTTP timeouts, flawless ASR transcripts, and instant AI executive briefs.
